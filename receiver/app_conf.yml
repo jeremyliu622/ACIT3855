@@ -1,0 +1,9 @@
+version: 1
+add_book:
+  url: http://localhost:8090/books/add
+purchase_book:
+  url: http://localhost:8090/books/purchase
+events:
+  hostname: acit3855jeremy.eastus2.cloudapp.azure.com
+  port: 9092
+  topic: events

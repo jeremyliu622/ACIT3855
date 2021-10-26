@@ -1,0 +1,120 @@
+openapi: 3.0.0
+info:
+  description: This is an API for the online bookstore to add books and purchase books.
+  version: "1.0.0"
+  title: Online Bookstore API
+  contact:
+    email: bliu90@my.bcit.ca
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: staff
+    description: Secured staff-only calls
+  - name: public
+    description: Public access
+paths:
+  /books/add:
+    post:
+      tags:
+        - staff
+      summary: add a new book
+      operationId: app.add_new_book
+      description: Adds a new book to the system
+      responses:
+        '201':
+          description: item created
+        '400':
+          description: 'invalid input, object invalid'
+        '409':
+          description: an existing item already exists
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Book'
+        description: Inventory item to add
+
+  /books/purchase:
+    post:
+      tags:
+        - public
+      summary: purchase books online
+      operationId: app.purchase_book
+      description: pass the book ID to the system to purchase the specific book online
+      responses:
+        '201':
+          description: purchase successed
+        '400':
+          description: 'invalid input, unable complete the purchase'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/purchaseBooks'
+        description: Purchase books
+
+components:
+  schemas:
+    Book:
+      type: object
+      required:
+        - book_id
+        - name
+        - author
+        - category
+        - price
+        - quantity
+        - date_created
+      properties:
+        book_id:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        name:
+          type: string
+          example: A Gentleman in Moscow
+        author:
+          type: string
+          example: Amor Towles
+        category:
+          type: string
+          example: Novel
+        price:
+          type: number
+          example: 12.50
+        quantity:
+          type: integer
+          example: 100
+        date_created:
+          type: string
+          format: date-time
+          example: 2016-08-29T09:12:33.001Z
+
+    purchaseBooks:
+      type: object
+      required:
+        - book_id
+        - purchase_id
+        - username
+        - date_created
+        - quantity
+      properties:
+        book_id:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        purchase_id:
+          type: string
+          format: uuid
+          example: 2db6055e-bf74-4dbb-a3d7-dbe1a618b264
+        username:
+          type: string
+          example: jeremy
+        date_created:
+          type: string
+          format: date-time
+          example: 2016-08-29T09:12:33.001Z
+        quantity:
+          type: integer
+          example: 1

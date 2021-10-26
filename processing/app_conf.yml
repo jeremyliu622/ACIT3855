@@ -1,0 +1,9 @@
+version: 1
+data_store:
+  filename: data.json
+scheduler:
+  period_sec: 5
+get_book_inventory:
+  http://localhost:8090/books/add
+get_purchase_history:
+  http://localhost:8090/books/purchase

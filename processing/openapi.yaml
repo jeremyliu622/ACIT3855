@@ -1,0 +1,62 @@
+openapi: 3.0.0
+info:
+  description: This is an API for the online bookstore to add books and purchase books.
+  version: "1.0.0"
+  title: Online Bookstore API
+  contact:
+    email: bliu90@my.bcit.ca
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: staff
+    description: Secured staff-only calls
+  - name: public
+    description: Public access
+paths:
+  /stats:
+    get:
+      summary: Gets the event stats
+      operationId: app.get_stats
+      description: Gets Blood Pressure and Heart Rate processsed statistics
+      responses:
+        '200':
+          description: Successfully returned a list of blood pressure events
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/ReadingStats'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+components:
+  schemas:
+    ReadingStats:
+      type: object
+      required:
+        - num_bi_readings
+        - max_bi_quantity_readings
+        - num_ph_readings
+        - max_ph_quantity_readings
+      properties:
+        num_bi_readings:
+          type: integer
+          example: 500000
+        max_bi_quantity_readings:
+          type: integer
+          example: 5000
+        num_ph_readings:
+          type: integer
+          example: 500000
+        max_ph_quantity_readings:
+          type: integer
+          example: 150
