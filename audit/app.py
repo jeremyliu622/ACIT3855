@@ -6,6 +6,7 @@ import requests
 import datetime
 import json
 from pykafka import KafkaClient
+from flask_cors import CORS, cross_origin
 
 
 HEADERS = {"content-type": "application/json"}
@@ -72,6 +73,8 @@ def get_purchase_history(index):
 
 
 app = connexion.FlaskApp(__name__, specification_dir='')
+CORS(app.app)
+app.app.config['CORS_HEADERS']='Content-Type'
 app.add_api('openapi.yaml',
             strict_validation=True,
             validate_responses=True)
