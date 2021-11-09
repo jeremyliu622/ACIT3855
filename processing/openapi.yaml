@@ -14,20 +14,56 @@ tags:
   - name: public
     description: Public access
 paths:
-  /stats:
+  /books/add:
+#    post:
+#      tags:
+#        - staff
+#      summary: add a new book
+#      operationId: app.add_new_book
+#      description: Adds a new book to the system
+#      responses:
+#        '201':
+#          description: item created
+#        '400':
+#          description: 'invalid input, object invalid'
+#        '409':
+#          description: an existing item already exists
+#      requestBody:
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/Book'
+#        description: Inventory item to add
     get:
-      summary: Gets the event stats
-      operationId: app.get_stats
-      description: Gets Blood Pressure and Heart Rate processsed statistics
+      tags:
+        - staff
+      summary: gets the book inventory
+      operationId: app.get_book_inventory
+      description: Gets the book inventory
+      parameters:
+        - in: query
+          name: start_timestamp
+          description: Limits the number of items on a page
+          schema:
+            type: string
+            format: date-time
+            example: 2016-08-29T09:12:33.001Z
+        - in: query
+          name: end_timestamp
+          description: Limits the number of items on a page
+          schema:
+            type: string
+            format: date-time
+            example: 2016-08-29T09:12:33.001Z
       responses:
         '200':
-          description: Successfully returned a list of blood pressure events
+          description: Succesfully returned a list of books inventory
           content:
             application/json:
               schema:
-                type: object
+                type: array
                 items:
-                  $ref: '#/components/schemas/ReadingStats'
+                  $ref: '#/components/schemas/Book'
         '400':
           description: Invalid request
           content:
@@ -38,25 +74,124 @@ paths:
                   message:
                     type: string
 
+  /books/purchase:
+#    post:
+#      tags:
+#        - public
+#      summary: purchase books online
+#      operationId: app.purchase_book
+#      description: pass the book ID to the system to purchase the specific book online
+#      responses:
+#        '201':
+#          description: purchase successed
+#        '400':
+#          description: 'invalid input, unable complete the purchase'
+#      requestBody:
+#        content:
+#          application/json:
+#            schema:
+#              $ref: '#/components/schemas/purchaseBooks'
+#        description: Purchase books
+    get:
+      tags:
+        - public
+      summary: gets the purchase history
+      operationId: app.get_purchase_history
+      description: Gets the new purchase history
+      parameters:
+        - in: query
+          name: start_timestamp
+          description: Limits the number of items on a page
+          schema:
+            type: string
+            format: date-time
+            example: 2016-08-29T09:12:33.001Z
+        - in: query
+          name: end_timestamp
+          description: Limits the number of items on a page
+          schema:
+            type: string
+            format: date-time
+            example: 2016-08-29T09:12:33.001Z
+      responses:
+        '200':
+          description: Succesfully returned a list of purchase hsitories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/purchaseBooks'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
 components:
   schemas:
-    ReadingStats:
+    Book:
       type: object
       required:
-        - num_bi_readings
-        - max_bi_quantity_readings
-        - num_ph_readings
-        - max_ph_quantity_readings
+        - book_id
+        - name
+        - author
+        - category
+        - price
+        - quantity
+        - date_created
       properties:
-        num_bi_readings:
+        book_id:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        name:
+          type: string
+          example: A Gentleman in Moscow
+        author:
+          type: string
+          example: Amor Towles
+        category:
+          type: string
+          example: Novel
+        price:
+          type: number
+          example: 12.50
+        quantity:
           type: integer
-          example: 500000
-        max_bi_quantity_readings:
+          example: 100
+        date_created:
+          type: string
+          format: date-time
+          example: 2016-08-29T09:12:33.001Z
+
+    purchaseBooks:
+      type: object
+      required:
+        - book_id
+        - purchase_id
+        - username
+        - date_created
+        - quantity
+      properties:
+        book_id:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        purchase_id:
+          type: string
+          format: uuid
+          example: 2db6055e-bf74-4dbb-a3d7-dbe1a618b264
+        username:
+          type: string
+          example: jeremy
+        date_created:
+          type: string
+          format: date-time
+          example: 2016-08-29T09:12:33.001Z
+        quantity:
           type: integer
-          example: 5000
-        num_ph_readings:
-          type: integer
-          example: 500000
-        max_ph_quantity_readings:
-          type: integer
-          example: 150
+          example: 1
