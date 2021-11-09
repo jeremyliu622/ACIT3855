@@ -7,7 +7,6 @@ from connexion import NoContent
 import datetime
 import os
 import requests
-from flask_cors import CORS, cross_origin
 
 with open("app_conf.yml", "r") as f:
     app_config = yaml.safe_load(f.read())
@@ -58,7 +57,10 @@ def populate_stats():
         last_updated = current_time
 
     # current_time = "2021-10-05T08:54:02Z"
-    payload = {"timestamp": last_updated}
+    payload = {
+        "start_timestamp": last_updated,
+        "end_timestamp": current_time
+               }
 
     r_bi = requests.get(app_config["get_book_inventory"], params=payload)
     if r_bi.status_code != 200:
@@ -90,14 +92,12 @@ def populate_stats():
 
 
 def init_scheduler():
-    sched = BackgroundScheduler(daemon=True, timezone="UTC")
+    sched = BackgroundScheduler(daemon=True)
     sched.add_job(populate_stats, "interval", seconds=app_config["scheduler"]["period_sec"])
     sched.start()
 
 
 app = connexion.FlaskApp(__name__, specification_dir='')
-CORS(app.app)
-app.app.config['CORS_HEADERS']='Content-Type'
 app.add_api('openapi.yaml',
             strict_validation=True,
             validate_responses=True)

@@ -3,7 +3,7 @@ import yaml
 import json
 import connexion
 from connexion import NoContent
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, and_
 from sqlalchemy.orm import sessionmaker
 from base import Base
 from book_inventory import BookInventory
@@ -76,13 +76,16 @@ def purchase_book(body):
     return NoContent, 201
 
 
-def get_book_inventory(timestamp):
+def get_book_inventory(start_timestamp, end_timestamp):
     """ Get the book inventories after the timestamp """
 
     session = DB_SESSION()
-    time_stamp_datetime = datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
+    start_timestamp_datetime = datetime.datetime.strptime(start_timestamp, "%Y-%m-%dT%H:%M:%SZ")
+    end_timestamp_datetime = datetime.datetime.strptime(end_timestamp, "%Y-%m-%dT%H:%M:%SZ")
 
-    book_inventories = session.query(BookInventory).filter(BookInventory.date_created >= time_stamp_datetime)
+    book_inventories = session.query(BookInventory).filter(
+        and_(BookInventory.date_created >= start_timestamp_datetime,
+             BookInventory.date_created < end_timestamp_datetime))
     results_list = []
 
     for book_inventory in book_inventories:
@@ -90,18 +93,22 @@ def get_book_inventory(timestamp):
 
     session.close()
 
-    logger.info("Query for getting Book Inventories after %s returns %d results" % (timestamp, len(results_list)))
+    logger.info("Query for getting Book Inventories between %s and %s returns %d results"
+                % (start_timestamp_datetime, end_timestamp_datetime, len(results_list)))
 
     return results_list, 200
 
 
-def get_purchase_history(timestamp):
+def get_purchase_history(start_timestamp, end_timestamp):
     """ Get the purchase histories after the timestamp """
 
     session = DB_SESSION()
-    time_stamp_datetime = datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
+    start_timestamp_datetime = datetime.datetime.strptime(start_timestamp, "%Y-%m-%dT%H:%M:%SZ")
+    end_timestamp_datetime = datetime.datetime.strptime(end_timestamp, "%Y-%m-%dT%H:%M:%SZ")
 
-    purchase_histories = session.query(PurchaseHistory).filter(PurchaseHistory.date_created >= time_stamp_datetime)
+    purchase_histories = session.query(PurchaseHistory).filter(
+        and_(PurchaseHistory.date_created >= start_timestamp_datetime,
+             PurchaseHistory.date_created < end_timestamp_datetime))
     results_list = []
 
     for purchase_history in purchase_histories:
@@ -109,7 +116,8 @@ def get_purchase_history(timestamp):
 
     session.close()
 
-    logger.info("Query for getting Purchase Histories after %s returns %d results" % (timestamp, len(results_list)))
+    logger.info("Query for getting Purchase Histories between %s and %s returns %d results"
+                % (start_timestamp_datetime, end_timestamp_datetime, len(results_list)))
 
     return results_list, 200
 
@@ -137,7 +145,6 @@ def process_messages():
             purchase_book(payload)
         # Commit the new message as being read
         consumer.commit_offsets()
-
 
 
 app = connexion.FlaskApp(__name__, specification_dir='')
