@@ -42,7 +42,14 @@ paths:
       description: Gets the book inventory
       parameters:
         - in: query
-          name: timestamp
+          name: start_timestamp
+          description: Limits the number of items on a page
+          schema:
+            type: string
+            format: date-time
+            example: 2016-08-29T09:12:33.001Z
+        - in: query
+          name: end_timestamp
           description: Limits the number of items on a page
           schema:
             type: string
@@ -93,7 +100,14 @@ paths:
       description: Gets the new purchase history
       parameters:
         - in: query
-          name: timestamp
+          name: start_timestamp
+          description: Limits the number of items on a page
+          schema:
+            type: string
+            format: date-time
+            example: 2016-08-29T09:12:33.001Z
+        - in: query
+          name: end_timestamp
           description: Limits the number of items on a page
           schema:
             type: string
