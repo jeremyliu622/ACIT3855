@@ -12,6 +12,7 @@ import datetime
 from threading import Thread
 from pykafka import KafkaClient
 from pykafka.common import OffsetType
+import time
 
 
 with open("app_conf.yml", "r") as f:
@@ -127,8 +128,18 @@ def process_messages():
     print("process start")
     hostname = "%s:%d" % (app_config["events"]["hostname"],
                           app_config["events"]["port"])
-    client = KafkaClient(hosts=hostname)
-    topic = client.topics[str.encode(app_config["events"]["topic"])]
+    max_retry_count = app_config["events"]["max_retry_count"]
+    sleep_time = app_config["events"]["sleep_time"]
+    current_retry_count = 0
+    while current_retry_count < max_retry_count:
+        print("Trying to connect to Kafka - current retry count: %d." % current_retry_count )
+        client = KafkaClient(hosts=hostname)
+        try:
+            topic = client.topics[str.encode(app_config["events"]["topic"])]
+        except:
+            print("Failed to connect to Kafka.")
+            time.sleep(sleep_time)
+            current_retry_count += 1
 
     consumer = topic.get_simple_consumer(consumer_group=b'event_group',
                                          reset_offset_on_start=False,
