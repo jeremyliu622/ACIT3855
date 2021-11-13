@@ -133,8 +133,8 @@ def process_messages():
     current_retry_count = 0
     while current_retry_count < max_retry_count:
         print("Trying to connect to Kafka - current retry count: %d." % current_retry_count )
-        client = KafkaClient(hosts=hostname)
         try:
+            client = KafkaClient(hosts=hostname)
             topic = client.topics[str.encode(app_config["events"]["topic"])]
             break
         except:
