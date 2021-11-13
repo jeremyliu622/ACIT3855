@@ -52,7 +52,7 @@ def add_new_book(body):
     session.commit()
     session.close()
 
-    logger.info("Stored event %s request with a unique id of %s" % ("adding book", body["book_id"]))
+    # logger.info("Stored event %s request with a unique id of %s" % ("adding book", body["book_id"]))
 
     return NoContent, 201
 
@@ -73,7 +73,7 @@ def purchase_book(body):
     session.commit()
     session.close()
 
-    logger.info("Stored event %s request with a unique id of %s" % ("purchasing book", body["purchase_id"]))
+    # logger.info("Stored event %s request with a unique id of %s" % ("purchasing book", body["purchase_id"]))
 
     return NoContent, 201
 
@@ -95,8 +95,8 @@ def get_book_inventory(start_timestamp, end_timestamp):
 
     session.close()
 
-    logger.info("Query for getting Book Inventories between %s and %s returns %d results"
-                % (start_timestamp_datetime, end_timestamp_datetime, len(results_list)))
+    # logger.info("Query for getting Book Inventories between %s and %s returns %d results"
+    #             % (start_timestamp_datetime, end_timestamp_datetime, len(results_list)))
 
     return results_list, 200
 
@@ -118,29 +118,29 @@ def get_purchase_history(start_timestamp, end_timestamp):
 
     session.close()
 
-    logger.info("Query for getting Purchase Histories between %s and %s returns %d results"
-                % (start_timestamp_datetime, end_timestamp_datetime, len(results_list)))
+    # logger.info("Query for getting Purchase Histories between %s and %s returns %d results"
+    #             % (start_timestamp_datetime, end_timestamp_datetime, len(results_list)))
 
     return results_list, 200
 
 
 def process_messages():
     """ Process event messages """
-    print("process start")
+    logger.info("process start")
     hostname = "%s:%d" % (app_config["events"]["hostname"],
                           app_config["events"]["port"])
     max_retry_count = app_config["events"]["max_retry_count"]
     sleep_time = app_config["events"]["sleep_time"]
     current_retry_count = 0
     while current_retry_count < max_retry_count:
-        print("Trying to connect to Kafka - current retry count: %d." % current_retry_count )
+        logger.info("Trying to connect to Kafka - current retry count: %d." % current_retry_count )
         try:
             client = KafkaClient(hosts=hostname)
             topic = client.topics[str.encode(app_config["events"]["topic"])]
-            print("Successfully connect to Kafka.")
+            logger.info("Successfully connect to Kafka.")
             break
         except:
-            print("Failed to connect to Kafka.")
+            logger.error("Failed to connect to Kafka.")
             time.sleep(sleep_time)
             current_retry_count += 1
 
@@ -152,9 +152,11 @@ def process_messages():
         consumer.consume()
     except SocketDisconnectedError as e:
         consumer = topic.get_simple_consumer()
+        print(e)
         # use either the above method or the following:
         consumer.stop()
         consumer.start()
+        print("restart consumer")
 
     for msg in consumer:
         msg_str = msg.value.decode('utf-8')
