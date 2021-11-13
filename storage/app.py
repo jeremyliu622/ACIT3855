@@ -12,6 +12,7 @@ import datetime
 from threading import Thread
 from pykafka import KafkaClient
 from pykafka.common import OffsetType
+from pykafka.exceptions import SocketDisconnectedError
 import time
 
 
@@ -146,6 +147,14 @@ def process_messages():
     consumer = topic.get_simple_consumer(consumer_group=b'event_group',
                                          reset_offset_on_start=False,
                                          auto_offset_reset=OffsetType.LATEST)
+
+    try:
+        consumer.consume()
+    except SocketDisconnectedError as e:
+        consumer = topic.get_simple_consumer()
+        # use either the above method or the following:
+        consumer.stop()
+        consumer.start()
 
     for msg in consumer:
         msg_str = msg.value.decode('utf-8')
