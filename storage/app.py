@@ -136,6 +136,7 @@ def process_messages():
         try:
             client = KafkaClient(hosts=hostname)
             topic = client.topics[str.encode(app_config["events"]["topic"])]
+            print("Successfully connect to Kafka.")
             break
         except:
             print("Failed to connect to Kafka.")
