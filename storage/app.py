@@ -149,7 +149,17 @@ def process_messages():
                                          auto_offset_reset=OffsetType.LATEST)
 
     try:
-        consumer.consume()
+        for msg in consumer:
+            msg_str = msg.value.decode('utf-8')
+            msg = json.loads(msg_str)
+            logger.info("Message: %s" % msg)
+            payload = msg["payload"]
+            if msg["type"] == "bi":
+                add_new_book(payload)
+            elif msg["type"] == "ph":
+                purchase_book(payload)
+            # Commit the new message as being read
+            consumer.commit_offsets()
     except SocketDisconnectedError as e:
         consumer = topic.get_simple_consumer()
         print(e)
@@ -158,17 +168,7 @@ def process_messages():
         consumer.start()
         print("restart consumer")
 
-    for msg in consumer:
-        msg_str = msg.value.decode('utf-8')
-        msg = json.loads(msg_str)
-        logger.info("Message: %s" % msg)
-        payload = msg["payload"]
-        if msg["type"] == "bi":
-            add_new_book(payload)
-        elif msg["type"] == "ph":
-            purchase_book(payload)
-        # Commit the new message as being read
-        consumer.commit_offsets()
+
 
 
 app = connexion.FlaskApp(__name__, specification_dir='')
