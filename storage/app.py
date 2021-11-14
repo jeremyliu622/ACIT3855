@@ -161,8 +161,9 @@ def process_messages():
             # Commit the new message as being read
             consumer.commit_offsets()
     except SocketDisconnectedError as e:
-        consumer = topic.get_simple_consumer()
-        print(e)
+        consumer = topic.get_simple_consumer(consumer_group=b'event_group',
+                                             reset_offset_on_start=False,
+                                             auto_offset_reset=OffsetType.LATEST)
         # use either the above method or the following:
         consumer.stop()
         consumer.start()
