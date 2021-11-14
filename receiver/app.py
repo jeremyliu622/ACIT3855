@@ -2,7 +2,7 @@ import logging, logging.config
 import connexion
 import yaml
 from connexion import NoContent
-import requests
+import time
 import datetime
 import json
 from pykafka import KafkaClient
@@ -14,11 +14,26 @@ with open("app_conf.yml", "r") as f:
     app_config = yaml.safe_load(f.read())
     hostname = "%s:%d" % (app_config["events"]["hostname"],
                           app_config["events"]["port"])
+    max_retry_count = app_config["events"]["max_retry_count"]
+    sleep_time = app_config["events"]["sleep_time"]
 
 with open("log_conf.yml", "r") as f:
     log_config = yaml.safe_load(f.read())
     logging.config.dictConfig(log_config)
     logger = logging.getLogger("basicLogger")
+
+current_retry_count = 0
+while current_retry_count < max_retry_count:
+    logger.info("Trying to connect to Kafka - current retry count: %d." % current_retry_count)
+    try:
+        client = KafkaClient(hosts=hostname)
+        topic = client.topics[str.encode(app_config["events"]["topic"])]
+        logger.info("Successfully connect to Kafka.")
+        break
+    except:
+        logger.error("Failed to connect to Kafka.")
+        time.sleep(sleep_time)
+        current_retry_count += 1
 
 
 def add_new_book(body):
@@ -27,8 +42,6 @@ def add_new_book(body):
     logger.info("Received event %s request with a unique id of %s"
                 % ("adding book", body["book_id"]))
 
-    client = KafkaClient(hosts=hostname)
-    topic = client.topics[str.encode(app_config["events"]["topic"])]
     producer = topic.get_sync_producer()
     msg = {
         "type": "bi",
@@ -50,8 +63,6 @@ def purchase_book(body):
     logger.info("Received event %s request with a unique id of %s"
                 % ("purchasing book", body["purchase_id"]))
 
-    client = KafkaClient(hosts=hostname)
-    topic = client.topics[str.encode(app_config["events"]["topic"])]
     producer = topic.get_sync_producer()
     msg = {
         "type": "ph",

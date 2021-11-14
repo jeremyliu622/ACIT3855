@@ -12,7 +12,6 @@ import datetime
 from threading import Thread
 from pykafka import KafkaClient
 from pykafka.common import OffsetType
-from pykafka.exceptions import SocketDisconnectedError
 import time
 
 
@@ -52,7 +51,7 @@ def add_new_book(body):
     session.commit()
     session.close()
 
-    # logger.info("Stored event %s request with a unique id of %s" % ("adding book", body["book_id"]))
+    logger.info("Stored event %s request with a unique id of %s" % ("adding book", body["book_id"]))
 
     return NoContent, 201
 
@@ -73,7 +72,7 @@ def purchase_book(body):
     session.commit()
     session.close()
 
-    # logger.info("Stored event %s request with a unique id of %s" % ("purchasing book", body["purchase_id"]))
+    logger.info("Stored event %s request with a unique id of %s" % ("purchasing book", body["purchase_id"]))
 
     return NoContent, 201
 
@@ -95,8 +94,8 @@ def get_book_inventory(start_timestamp, end_timestamp):
 
     session.close()
 
-    # logger.info("Query for getting Book Inventories between %s and %s returns %d results"
-    #             % (start_timestamp_datetime, end_timestamp_datetime, len(results_list)))
+    logger.info("Query for getting Book Inventories between %s and %s returns %d results"
+                % (start_timestamp_datetime, end_timestamp_datetime, len(results_list)))
 
     return results_list, 200
 
@@ -118,8 +117,8 @@ def get_purchase_history(start_timestamp, end_timestamp):
 
     session.close()
 
-    # logger.info("Query for getting Purchase Histories between %s and %s returns %d results"
-    #             % (start_timestamp_datetime, end_timestamp_datetime, len(results_list)))
+    logger.info("Query for getting Purchase Histories between %s and %s returns %d results"
+                % (start_timestamp_datetime, end_timestamp_datetime, len(results_list)))
 
     return results_list, 200
 
@@ -148,28 +147,17 @@ def process_messages():
                                          reset_offset_on_start=False,
                                          auto_offset_reset=OffsetType.LATEST)
 
-    try:
-        for msg in consumer:
-            msg_str = msg.value.decode('utf-8')
-            msg = json.loads(msg_str)
-            logger.info("Message: %s" % msg)
-            payload = msg["payload"]
-            if msg["type"] == "bi":
-                add_new_book(payload)
-            elif msg["type"] == "ph":
-                purchase_book(payload)
-            # Commit the new message as being read
-            consumer.commit_offsets()
-    except SocketDisconnectedError as e:
-        consumer = topic.get_simple_consumer(consumer_group=b'event_group',
-                                             reset_offset_on_start=False,
-                                             auto_offset_reset=OffsetType.LATEST)
-        # use either the above method or the following:
-        consumer.stop()
-        consumer.start()
-        print("restart consumer")
-
-
+    for msg in consumer:
+        msg_str = msg.value.decode('utf-8')
+        msg = json.loads(msg_str)
+        logger.info("Message: %s" % msg)
+        payload = msg["payload"]
+        if msg["type"] == "bi":
+            add_new_book(payload)
+        elif msg["type"] == "ph":
+            purchase_book(payload)
+        # Commit the new message as being read
+        consumer.commit_offsets()
 
 
 app = connexion.FlaskApp(__name__, specification_dir='')
@@ -177,7 +165,7 @@ app.add_api("openapi.yaml", strict_validation=True, validate_responses=True)
 
 if __name__ == "__main__":
     t1 = Thread(target=process_messages)
-    # t1.setDaemon(True)
+    t1.setDaemon(True)
     t1.start()
     app.run(port=8090)
 
