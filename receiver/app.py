@@ -27,7 +27,9 @@ while current_retry_count < max_retry_count:
     logger.info("Trying to connect to Kafka - current retry count: %d." % current_retry_count)
     try:
         client = KafkaClient(hosts=hostname)
-        topic = client.topics[str.encode(app_config["events"]["topic"])]
+        topic = client.topics[str.encode(app_config["events"]["topic"])
+        producer = topic.get_sync_producer()
+        
         logger.info("Successfully connect to Kafka.")
         break
     except:
@@ -42,7 +44,6 @@ def add_new_book(body):
     logger.info("Received event %s request with a unique id of %s"
                 % ("adding book", body["book_id"]))
 
-    producer = topic.get_sync_producer()
     msg = {
         "type": "bi",
         "datetime": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
@@ -63,7 +64,6 @@ def purchase_book(body):
     logger.info("Received event %s request with a unique id of %s"
                 % ("purchasing book", body["purchase_id"]))
 
-    producer = topic.get_sync_producer()
     msg = {
         "type": "ph",
         "datetime": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
