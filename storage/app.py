@@ -24,8 +24,11 @@ else:
     print("In Dev Environment")
     app_conf_file = "app_conf.yml"
     log_conf_file = "log_conf.yml"
+
 with open(app_conf_file, 'r') as f:
     app_config = yaml.safe_load(f.read())
+    db_info = app_config["db"]
+
 # External Logging Configuration
 with open(log_conf_file, 'r') as f:
     log_config = yaml.safe_load(f.read())
@@ -35,14 +38,6 @@ logger = logging.getLogger('basicLogger')
 logger.info("App Conf File: %s" % app_conf_file)
 logger.info("Log Conf File: %s" % log_conf_file)
 
-with open("app_conf.yml", "r") as f:
-    app_config = yaml.safe_load(f.read())
-    db_info = app_config["db"]
-
-with open("log_conf.yml", "r") as f:
-    log_config = yaml.safe_load(f.read())
-    logging.config.dictConfig(log_config)
-    logger = logging.getLogger("basicLogger")
 
 DB_ENGINE = create_engine("mysql+pymysql://%s:%s@%s:%s/%s"
                           % (db_info["user"], db_info["password"], db_info["hostname"], db_info["port"], db_info["db"]))
